@@ -1,0 +1,837 @@
+openapi: 3.0.3
+info:
+  title: CleanSpeak API
+  description: CleanSpeak API
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:9011'
+security:
+  - ApiKeyAuth: []
+paths:
+  /content/item/moderate:
+    post:
+      description: "A request to have content moderated by the CleanSpeak API for Transient content. 
+       A unique identifier is not required on the API request, CleanSpeak will generate this on your behalf. "
+      operationId: moderateContentTransient
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+  /content/item/moderate/{contentItemId}:
+    post:
+      parameters:
+        - in: path
+          explode: false
+          name: contentItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique if of the content being updated
+      # ref global param not working:
+      # - $ref: '#/components/parameters/contentItemId'
+      #https://stackoverflow.com/questions/19590197/how-to-define-global-parameters-in-openapi
+      description: "A request to have content moderated by the CleanSpeak API for persistent content. 
+      You will need to provide a unique identifier (UUID) on the API request. When using this API with
+      persistent content you’ll need to first ensure your Application configuration is set to Persistent
+      Content Type. If you have not done this the API request will fail with an error message indicating you have not 
+      yet configured your Application. "
+      operationId: moderateContentPersistent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+    put:
+      parameters:
+        - in: path
+          explode: false
+          name: contentItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique if of the content being updated
+      description: "This API is used to send updates to existing content to CleanSpeak to be moderated. Only persistent content can be updated in 
+       CleanSpeak. Like the Filter Content API the same filtering is performed on content sent to this API. The difference is that instead of returning 
+       all matches found in the content, the Application filter rules are first applied to determine what action should be taken. Using this API allows 
+       you to modify the filter behavior without changing the way you send content to the filter. This allows for a much more powerful integration. "
+      operationId: moderateContentUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+          description: Success
+
+  # 4. Proxy Moderate Content 4.1 Request
+  /content/item/moderate/proxy:
+    post:
+      description: "Send content to be moderated similar to the Moderate Content API. This API is used exactly like the Moderate Content API except that 
+      its responses will be sent to a different destination with the exception of errors. \n\n If you need to update a piece of content then you can also use Proxy Update Content API which is the parallel for the Update Content API.
+      For Transient content, do not provide a unique identifier on the API request, CleanSpeak will generate this on your behalf. \n\n
+      The response for this request will be sent using a POST request to the application configured in the application's proxy. See here for more info: https://cleanspeak.com/docs/3.x/tech/apis/applications"
+      operationId: proxyModerateContent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+          description: Success
+  /content/item/moderate/proxy/{contentItemId}:
+    post:
+      description: "Proxy Moderate Content API request for moderating content for persistent content. You will need to provide a unique identifier (UUID) on the API request. 
+      When using this API with persistent content you’ll need to first ensure your Application configuration is set 
+      to Persistent Content Type. 
+      If you have not done this the API request will fail with an error message indicating you have not yet configured 
+      your Application. \n\n
+      The response for this request will be sent using a POST request to the application configured in the application's proxy. See here for more info: https://cleanspeak.com/docs/3.x/tech/apis/applications"
+      operationId: proxyModerateContentPersistent
+      parameters:
+        - in: path
+          explode: false
+          name: contentItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique if of the content being updated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+          description: Success
+    put:
+      description: "Update existing content to CleanSpeak to be moderated. Only persistent content can be updated in CleanSpeak.
+      Like the Filter Content API the same filtering is performed on content sent to this API. The difference is that instead 
+      of returning all matches found in the content, the Application filter rules are first applied to determine what action 
+      should be taken. Using this API allows you to modify the filter behavior without changing the way you send content to 
+      the filter. This allows for a much more powerful integration.
+      You need to provide the unique identifier (UUID) of the content being updated on the API request. \n\n
+       The response for this request will be sent using a POST request to the application configured in the application's proxy. See here for more info: https://cleanspeak.com/docs/3.x/tech/apis/applications
+      "
+      operationId: proxyUpdateContentUpdate
+      parameters:
+        - in: path
+          explode: false
+          name: contentItemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique if of the content being updated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateContentRequestBody'
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+  # 5.3 Forwarded response
+  # Should this be included?
+  # URI application.moderationConfiguration.proxy.url if proxy is enabled
+  /not/sure/yet:
+    post:
+      description: "This will be forwarded using a POST method to the destination configured in the application’s proxy configuration. "
+      operationId: proxyUpdateContent
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/ModerateContentResponseBody'
+  #Filter Content API
+  /content/item/filter:
+    post:
+      description: "This API is used to send content to CleanSpeak to be filtered. Content sent to this API is not persisted by
+      CleanSpeak and does not use the CleanSpeak Application filter rules. To use Application filter rules and other more advanced 
+      features of CleanSpeak see Moderate Content. "
+      operationId: filterContent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterContentRequestBody'
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application\json:
+              schema:
+                $ref: '#/components/schemas/FilterContentResponseBody'
+components:
+  schemas:
+    ModerateContentRequestBody:
+      description: "A request body for the CleanSpeak Moderation API."
+      type: object
+      example:
+        content:
+          applicationId: f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+          createInstant: 1625691361999
+          location: threadId_42
+          parts:
+            - content: Smurf off
+              name: Body
+              type: text
+          senderDisplayName: PapaSmurf
+          senderId: f6d3df91-ed4b-48ad-810f-05a367d328c2
+      properties:
+        content:
+          type: object
+          description: "The piece of content being moderated."
+          properties:
+            content.applicationId:
+              format: uuid
+              type: string
+              description: The Id of the application that corresponds to the content source.
+            content.createInstant:
+              type: integer
+              format: int64
+              description: "The instant that the content was generated. NOTE: this is represented as milliseconds since Epoch. "
+            content.location:
+              type: string
+              description: "Specifies the location within the application that the content was generated. 
+              For example, you might use a chat room name, area Id for a game, or a thread Id for a forum. 
+              This parameter is used by CleanSpeak to display conversational views of content with the Context View feature."
+            content.parts:
+              type: array
+              description: "An array that contains one to many content parts. If your content only has a single part, 
+              such as a chat message, the array will only contain a single text entry. The reason you would send in 
+              multiple content parts within a single request is to ensure the moderation decision affects each part. \n\n
+              For example, you may send in an image for moderation, the image has a title and a description field. 
+              You would send this to CleanSpeak with three content parts, the image and two text parts. 
+              
+              If the content of the image title is rejected the entire content needs to be rejected wholesale, the 
+              title, description and the image. In this case it would make sense to treat all three parts as an atomic 
+              unit of content. \n\n
+              
+              If individual content parts are not related and can be rejected or approved separately then you should 
+              send them to CleanSpeak as separate requests."
+              items:
+                type: object
+                properties:
+                  content.parts[x].content:
+                    type: string
+                    description: "The content to be filtered. The content type will indicate what type of content is expected in this parameter. \n
+          
+                      Content Types \n
+          
+                      Type	     Description \n
+                      
+                      text       The content to be filtered. \n\n
+                      bbcode     Text content to be filtered that may contain BBCode. \n\n
+                      html       Text content to be filtered that may contain HTML.AVAILABLE SINCE 3.19.0 \n\n
+                      attribute  A simple attribute of the content. This is an arbitrary string and will not be filtered. \n\n
+                      hyperlink  Fully qualified URL to an external web page. \n\n
+                      image      Fully qualified URL of the image to be displayed. \n\n
+                      video      Fully qualified URL of the video to be displayed. \n\n
+                      audio      Fully qualified URL of the audio file to be moderated. \n\n"
+                  content.parts[x].name:
+                    type: string
+                    description: "The name of the content part. This value is optional an intended to better identify the context when you have more than one content part. For example this could be Title, Message Body or Image."
+                  content.parts[x].type:
+                    type: string
+                    description: "The type of this content part. Possible values \n\n
+                                    • text \n\n
+                                    • bbcode \n\n
+                                    • html AVAILABLE SINCE 3.19.0 \n\n
+                                    • attribute \n\n
+                                    • hyperlink \n\n
+                                    • image \n\n
+                                    • video \n\n
+                                    • audio \n\n"
+                required:
+                  - content.parts[x].content
+                  - content.parts[x].type
+        content.receiverDisplayName:
+          type: string
+          description: "The display name of the user that received the content. This parameter should only be set if this piece of content was a private message between two users."
+        content.receiverId:
+          type: string
+          format: uuid
+          description: "The Id of the user that received of the content. This parameter should only be set if this piece of content was a private message between two users."
+        content.senderDisplayName:
+          type: string
+          description: "The display name (username or whatever is displayed to other users in the game/forum) that generated the content."
+        content.senderId:
+          type: string
+          format: uuid
+          description: "The Id of the user that generated the content. This parameter is required so that CleanSpeak can analyze and associate the content with the user that generated it."
+        moderation:
+          type: string
+          description: "Tells CleanSpeak to forcibly put the content into a queue (Approval, User Alert or Content Alert). This overrides the configuration you have setup for the Application in the Management Interface. \n\n 
+          • requiresApproval \n\n
+            • generatesAlert \n\n
+            • generatesContentAlert \n\n"
+    ModerateContentResponseBody:
+      description: "A request body for the CleanSpeak Moderation API"
+      type: object
+      example:
+        content:
+          id: 99f2c4e8-961a-4a34-b9b9-43fc3f3b43ec
+        contentAction: allow
+        moderationAction: generatesAlert
+        stored: true
+      properties:
+        content:
+          type: string
+          description: "The piece of content being moderated."
+        content.id:
+          format: uuid
+          type: string
+          description: "The id of the piece of content. This might have been passed in on the request or generated by CleanSpeak."
+        content.parts:
+          type: array
+          items:
+            type: string
+          description: "The list of parts of content."
+        content.parts[x].mediaFilterResult:
+          type: object
+          description: "An object for displaying media filter results. This is only present if the application is configured to return filter matches."
+        content.parts[x].mediaFilterResult.alcoholConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains alcohol imagery."
+        content.parts[x].mediaFilterResult.drugsConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains drug imagery."
+        content.parts[x].mediaFilterResult.offensiveResults[x].offensiveConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains offensive content."
+        content.parts[x].mediaFilterResult.offensiveResults[x].offensiveTag:
+          type: string
+          description: "The tag for the type of offensive content."
+        content.parts[x].mediaFilterResult.offensiveResults[x].position:
+          type: number
+          format: float
+          description: "The frame that the offensive content exists on."
+        content.parts[x].mediaFilterResult.partialNudityConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains partial nudity."
+        content.parts[x].mediaFilterResult.partialNudityTag:
+          type: string
+          description: "The associated tag for the type of partial nudity."
+        content.parts[x].mediaFilterResult.rawNudityConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains raw nudity."
+        content.parts[x].mediaFilterResult.scamConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image is a known scammer image."
+        content.parts[x].mediaFilterResult.weaponConfidence:
+          type: number
+          format: float
+          description: "The confidence that the image contains weapon."
+        content.parts[x].name:
+          type: string
+          description: "The name of the part of the content."
+        content.parts[x].replacement:
+          type: string
+          description: "The replacement text generated by CleanSpeak after applying the filter rules to this part."
+        contentAction:
+          type: string
+          description: "The action that the client should take with the content. \n\n
+               Possible values: \n
+               
+               Action ----- Description \n\n
+               
+               allow \n\n  The content should be allowed. \n\n
+               authorOnly \n\n The content should be allowed but only the author of the content should be               allowed to view the content. \n\n
+               
+               replace \n\n The content should be allowed, but utilize the replacement text provided in the response. \n\n
+               
+               queuedForApproval \n\n The content has been queued for approval and should not be displayed to other users until it has been approved by a moderator. \n\n
+               
+               reject \n\n The content should be rejected. \n\n"
+        moderationAction:
+          type: string
+          description: "The action that was taken on the content. Possible values: \n\n
+
+                        • requiresApproval \n\n
+                        • generatesAlert \n\n
+                        • generatesContentAlert \n\n "
+        stored:
+          type: boolean
+    FilterContentRequestBody:
+      description: "The request body sent to the CleanSpeak Filter Content API."
+      type: object
+      example:
+        blacklist:
+          ignoreCharacters: qxz
+          locales:
+            - en
+          minimumSeverity: medium
+          tags:
+            - Vulgarity
+            - Sexual
+        content: "fuck A bill at test.net 332-999 eight767 abcd my address\0"
+        characters:
+          - A
+          - '3'
+        contentType: text
+        emails:
+          domainQuality:
+            - domain: net
+              quality: '0.8'
+            - domain: xyz
+              quality: '0.1'
+          maximumMatchLength: '100'
+          spacePenalty: '-0.2'
+        phoneNumbers:
+          maximumMatchLength: '20'
+          minimumMatchLength: '3'
+          separatorPenalty: '-0.3'
+          spacePenalty: '-0.1'
+          wordPenalty: '-0.3'
+        replaceChar: x
+        unicode:
+          ranges:
+            - \u0000-\u0001
+        urls:
+          domainQuality:
+            - domain: net
+              quality: '0.8'
+            - domain: xyz
+              quality: '0.1'
+        maximumMatchLength: '50'
+        spacePenalty: '-0.2'
+        words:
+          - abcd
+          - competitor
+      properties:
+        blacklist:
+          type: object
+          description: "Object that defines the blacklist filter options."
+        blacklist.dictionaryTags:
+          type: array
+          items:
+            type: string
+          description: "A list of dictionary tags to apply to the filter.
+          Any tags added here will allow dictionary entries with the same 
+          tag to behave as a whitelist if there is an EXACT match on the word."
+        blacklist.disabled:
+          type: boolean
+          description: "This parameter disables the blacklist filter completely. No blacklist matches will be returned and the replacement 
+          value will not contain replacements for blacklist matches. When this parameter is set to true all other nested blacklist parameters will be ignored.
+          OPTIONAL defaults to false"
+        blacklist.ignorableCharacters:
+          type: string
+          description: "Set this parameter to a list of characters the filter can skip over to find a match. 
+                    Only the letters a through z are permitted.
+                    Specifically, this feature will catch any blacklist word even if separated by a single character on this list.
+                    Example:\ SxMxUxRxF 
+                    Note:\ only the same letter may be used to separate the characters throughout the word and only one ignored character in a row is permitted.
+                     OPTIONAL defaults to \"qxz\""
+        blacklist.locales:
+          type: array
+          items:
+            type: string
+          description: "This parameter specifies the locales that blacklist filter matches must have in order to be included in the response. When this parameter is omitted all matches will be returned regardless of locale. See Locales."
+        blacklist.minimumSeverity:
+          type: string
+          description: "This parameter specifies the minimum severity that blacklist filter matches must have to be included in the response. When this parameter is omitted all matches will be returned regardless of severity. 
+                        Possible values :\ \n\n
+
+                                   • mild
+
+                                   • medium
+
+                                   • high
+
+                                   • severe 
+                                   OPTIONAL"
+        blacklist.tags:
+          type: array
+          items:
+            type: string
+          description: "This parameter specifies the tags that blacklist filter matches must have to be included in the response. OPTIONAL AVAILABLE SINCE 3.12.0"
+        content:
+          type: string
+          description: "The message body to be filtered"
+        characters:
+          type: array
+          items:
+            type: string
+          description: "This parameter specifies the individual characters to find within the content string.
+          Example Parameter \"characters\": [\"A\", \"❢\", \"§\"] OPTIONAL"
+        contentType:
+          type: array
+          items:
+            type: string
+          description: "This parameter specifies the content type. When this parameter is omitted the API will default to text. Possible values:
+            • text
+            • bbcode
+            • html AVAILABLE SINCE 3.19.0
+
+          Prior to version 3.19.0, the content type was auto-detected when then content type was not specified. OPTIONAL defaults to text"
+        emails:
+          type: object
+          description: "Object that defines the email filter options. OPTIONAL"
+        emails.disabled:
+          type: boolean
+          description: "This parameter disables the email filter completely. No email matches will be returned and the replacement 
+          value will not contain replacements for email matches. When this parameter is set to true all other nested email parameters 
+          will be ignored. OPTIONAL defaults to false"
+        emails.domainQuality:
+          type: array
+          items:
+            type: string
+          description: "The list of domain quality configurations for the Email filter. Providing domain quality you may override the 
+          default behavior. CleanSpeak already adjusts domain scores of domain names that are also dictionary words such as .design and .photo. 
+          You may manually provider a lower score for a domain by providing a configuration.
+          Example Parameter \"domainQuality\": [{\"domain\": \"chat\", \"quality\": 0.5}] OPTIONAL"
+        emails.domainQuality[x].domain:
+          type: string
+          description: "This parameter is the name of the domain. For example, for the .chat domain name, you would set this parameter to chat. REQUIRED"
+        emails.domainQuality[x].quality:
+          format: double
+          type: number
+          description: "This parameter sets the initial quality score for the specified domain. This value may be between 0 and 1. 
+          See Quality Score. REQUIRED"
+        emails.maximumMatchLength:
+          type: integer
+          description: "This parameter specifies the maximum length that a match can be in order to be considered an email. If the match length is 
+          greater than the maximum match length the match will be ignored. OPTIONAL defaults to 50"
+        emails.minimumQuality:
+          format: double
+          type: number
+          description: "This parameters specifies the minimum quality score that email matches must have to be included in the response 
+          and replaced in the replacement value. OPTIONAL"
+        emails.spacePenalty:
+          format: double
+          type: number
+          description: "This parameter specifies a penalty applied to the quality score if the match contains any spaces. 
+          For example, user@ example.com contains a space so the space penalty value will be added to the quality score. 
+          The email space penalty is applied once regardless of the number of spaces found in the match. OPTIONAL defaults to -0.05"
+        phoneNumbers:
+          type: object
+          description: "Object that defines the phone number filter options. OPTIONAL"
+        phoneNumbers.disabled:
+          type: boolean
+          description: "This parameter disables the phone number filter completely. No phone number matches will be returned and the 
+          replacement value will not contain replacements for phone number matches. When this parameter is set to true all other 
+          nested phoneNumbers parameters will be ignored. Optional defaults to false OPTIONAL defaults to false"
+        phoneNumbers.maximumMatchLength:
+          type: integer
+          description: "This parameter specifies the maximum length that a match can be in order to be considered an phone number. 
+          If the match length is greater than the maximum match length the match will be ignored. OPTIONAL defaults to 20"
+        phoneNumbers.minimumMatchLength:
+          type: integer
+          description: "This parameter specifies the minimum length that a match can be in order to be considered a phone number. 
+          The default value covers most world wide phone number formats. OPTIONAL defaults to 7"
+        phoneNumbers.minimumQuality:
+          format: double
+          type: number
+          description: "This parameters specifies the minimum quality score that phone number matches must have to be included in the 
+          response and replaced in the replacement value."
+        phoneNumbers.seperatorPenalty:
+          format: double
+          type: number
+          description: "This parameter specifies a penalty that is applied to the quality score for a match if it contains any type of 
+          separator other than a dash or parenthesis. For example, 303;555;1234 contains two penalized separators so the separator 
+          penalty will be multiplied by the number of separators and added to the quality score. OPTIONAL defaults to -0.02"
+        phoneNumbers.spacePenalty:
+          format: double
+          type: number
+          description: "This parameter specifies a penalty that is applied to the quality score for a match if it contains one or more spaces. 
+          For example, 303 555 1234 contains two spaces so the space penalty will be multiplied by the number of spaces and added to the quality 
+          score. OPTIONAL defaults to -0.02"
+        phoneNumbers.wordPenalty:
+          format: double
+          type: integer
+          description: "This parameter specifies a penalty that is applied to the quality score for a match if it contains any words rather than 
+          digits. For example, three zero three 555 1234 contains three words so the word penalty will be multiplied by the number of words and 
+          added to the quality score. OPTIONAL defaults to -0.03"
+        replaceChar:
+          type: string
+          description: "The character that is used during a replace operation."
+        unicode:
+          type: object
+          description: "Object that defines the unicode filter options."
+        unicode.disabled:
+          type: boolean
+          description: "This parameter disables the unicode filter completely. No unicode matches will be returned if this is set to true."
+        unicode.ranges:
+          type: array
+          items:
+            type: string
+        usernames:
+          type: object
+          description: "Object that defines the username filter options. OPTIONAL"
+        usernames.disabled:
+          type: boolean
+          description: "This parameter disables the username filter completely. No username matches will be returned and the replacement 
+          value will not contain replacements for username matches. When this parameter is set to true all other nested username parameters 
+          will be ignored. OPTIONAL defaults to true"
+        usernames.scheme:
+          type: string
+          description: "The username filter scheme to use during this filter request. REQUIRED"
+        urls:
+          type: object
+          description: "Object that defines the url filter options. OPTIONAL"
+        urls.disabled:
+          type: boolean
+          description: "This parameter disables the url filter completely. No url matches will be returned and the replacement value will not 
+          contain replacements for url matches. When this parameter is set to true all other nested url parameters will be ignored."
+        urls.domainQuality:
+          type: array
+          items:
+            type: string
+          description: "The list of domain quality configurations for the url filter. Providing domain quality you may override the default behavior. CleanSpeak already adjusts domain scores of domain names that are also dictionary words such as .design and .photo. You may manually provider a lower score for a domain by providing a configuration.
+          Example Parameter \"domainQuality\": [{\"domain\": \"chat\", \"quality\": 0.5}]"
+        urls.domainQuality[x].domain:
+          type: string
+          description: "This parameter is the name of the domain. For example, for the .chat domain name, you would set this parameter to chat."
+        urls.domainQuality[x].quality:
+          type: number
+          format: double
+          description: "This parameter sets the initial quality score for the specified domain. This value may be between 0 and 1."
+        urls.maximumMatchLength:
+          type: boolean
+          description: "This parameter specifies the maximum length that a match can be in order to be considered a url. 
+          If the match length is greater than the maximum match length the match will be ignored. OPTIONAL defaults to 50"
+        urls.minimumQuality:
+          type: number
+          format: double
+          description: "This parameters specifies the minimum quality score that url matches must have to be included in the response 
+          and replaced in the replacement value."
+        urls.spacePenalty:
+          type: number
+          format: double
+          description: "This parameter specifies a penalty that is applied to the quality score for a match if it contains one or more spaces. 
+          For example, www .ex a m ple .com contains spaces so the space penalty will added to the quality score."
+        words:
+          type: array
+          items:
+            type: string
+          description: "This parameter specifies the individual words to find within the content string. Generally words that should be filtered 
+          should be added to your blacklist. This parameter allows you to find matches without modifying your list.
+          Example Parameter \"words\": [\"Competitor\", \"badguy\", \"tuesday\"]"
+        whitelist:
+          type: boolean
+          description: "This parameter enables the Whitelist filter. This parameter is unique in that when enabled by setting this parameter to 
+          true it implicitly disables all other filters. [See Whitelist Filter](https://cleanspeak.com/docs/3.x/tech/apis/kids-chat)"
+      required:
+        - content
+        - emails.domainQuality[x].domain
+        - emails.domainQuality[x].quality
+        - usernames.scheme
+        - urls.domainQuality[x].domain
+        - urls.domainQuality[x].quality
+    FilterContentResponseBody:
+      description: "A successful response from making submitting content to the Filter Content API"
+      type: object
+      example:
+        matches:
+          - length: 4
+            locale: en
+            matched: fuck
+            quality: 1
+            root: fuck
+            severity: severe
+            start: 0
+            tags:
+              - Vulgarity
+            type: blacklist
+          - length: 1
+            quality: 1
+            start: 5
+            type: characters
+          - length: 16
+            quality: 0.8
+            start: 7
+            type: emails
+          - length: 8
+            quality: 1
+            start: 15
+            type: urls
+          - length: 16
+            quality: 0.6
+            start: 24
+            type: phoneNumbers
+          - length: 1
+            quality: 1
+            start: 24
+            type: characters
+          - length: 1
+            quality: 1
+            start: 25
+            type: characters
+          - length: 4
+            quality: 1
+            start: 41
+            type: words
+          - length: 7
+            locale: en
+            matched: adress
+            quality: 1
+            root: address
+            severity: medium
+            start: 49
+            tags:
+              - PII
+            type: blacklist
+          - indices:
+              - 57
+            quality: 1
+            type: unicode
+        replacement: xxxx x xxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxx my xxxxxxx
+      properties:
+        matches:
+          description: "The array of matches returned by the filter request."
+          type: array
+          items:
+            type: string
+        matches.indicies:
+          description: "A list of integer offsets of illegal unicode characters. These characters were defined on input or are part of a default configuration.
+
+            This field will only be present on a unicode type match."
+          type: array
+          items:
+            type: integer
+        matches[x].length:
+          description: "The length of the filter match."
+          type: integer
+        matches[x].start:
+          description: "The starting index of the match into the original content string. For example, consider the following string You’re a real jerk!. If we match on jerk, the start index of this match is 14."
+        matches[x].locale:
+          type: string
+          description: "The locale of the match. This value returned will be the ISO 639-1 two letter language code followed by an optional underscore and a ISO 3166-1 alpha-2 country code."
+        matches[x].matched:
+          description: "If the match is of the type blacklist then this will contain the conjugation or variation that the filter matched on. For example, if smurf is on the blacklist and marked as a verb, and smurfing is in the content, then 'smurfing' would be the matched value."
+          type: string
+        matches[x].root:
+          description: "If the match is of the type blacklist then this will contain the root word of the match. For example, if smurf is on the blacklist and marked as a verb, and smurfing is in the content, then 'smurf' would be the root value."
+          type: string
+        matches[x].quality:
+          description: "The quality score of the match. Blacklist matches will always return with a value of 1.0. Email, phone numbers and URL matches will return with a value between 0.0 - 1.0."
+          type: number
+          format: double
+        matches[x].severity:
+          description: "If the match is of the type blacklist then this will contain the severity of the match. Possible values are: \n\n
+      
+          • none \n\n
+          
+          • mild \n\n
+          
+          • medium \n\n
+          
+          • high \n\n
+          
+          • severe \n\n"
+          type: string
+        matches[x].type:
+          description: "The type of the match. This will correspond to the filter types that were enabled and configured in the request. Possible values are: \n\n
+  
+            • blacklist \n\n
+            
+            • characters \n\n
+            
+            • emails \n\n
+            
+            • phoneNumbers \n\n
+            
+            • urls \n\n
+            
+            • words \n\n
+            
+            • whitelist \n\n
+            
+            • unicode (AVAILABLE SINCE 3.22.0) \n\n
+            
+            username \n\n"
+          type: string
+        matches[x].tags:
+          description: "A list of Blacklist Tags that a match contains."
+          type: array
+          items:
+            type: string
+        matches[x].whitelistResult:
+          description: "A whitelist result status. \n\n
+          
+          • allowed - The input text contains only allowed words and is allowed \n\n
+          
+          • disallowedWord - The input contains text that is not on the allowed words list. \n\n
+          
+          • disallowedPhrase - The input contains allowed words arranged in a disallowed way. \n\n"
+          type: string
+        matches[x].metaMatches:
+          description: "The array of meta matches returned by the filter request. Meta matches are returned when the contentType of bbCode or html is filtered and matches are found within the BBCode attributes. Meta match properties are identical to the matches. \n\n
+  
+          Consider the following example content. \n\n
+          
+          {
+            \"content\": \"[url=https://cleanspeak.com]Hello[/url]\",
+            \"contentType\": \"bbcode\"
+          } \n\n
+          Notice this content contains a URL match inside of a BBCode attribute, this match is considered a meta match."
+          type: array
+          items:
+            type: string
+        replacement:
+          description: "The original message with all matches replaced by a replacement character. If a replacement character was not specified on the request the default replacement character will be used. \n\n
+  
+  
+          For example, consider the following content. \n\n
+          Piss off jerk \n\n
+          Assuming piss and jerk are returned as matches, the following replacement string would be returned *** off ****."
+          type: string
+
+  # parameters:
+  #     - description: The unique if of the content being updated
+  #       explode: false
+  #       in: path
+  #       name: contentItemId
+  #       required: true
+  #       schema:
+  #         type: string
+  #         format: uuid
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: Authorization
+      in: header
